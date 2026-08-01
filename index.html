@@ -1,0 +1,529 @@
+<style>
+  :root{
+    --paper:#EFEDE4;
+    --paper-white:#FBFAF6;
+    --ink:#22262B;
+    --ink-soft:#565C64;
+    --stamp-red:#A6362C;
+    --folder-tan:#C7A467;
+    --approved-green:#4B7355;
+    --line:#D8D3C4;
+    --mono:'IBM Plex Mono', 'Courier New', monospace;
+    --serif:'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --slab:'Roboto Slab', 'Georgia', serif;
+  }
+  *{box-sizing:border-box;}
+  .cf-root{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    padding:0;
+    min-height:100%;
+    position:relative;
+  }
+  .cf-header{
+    padding:28px 32px 18px;
+    border-bottom:3px solid var(--ink);
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .cf-title{
+    font-family:var(--slab);
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+  }
+  .cf-title small{
+    display:block;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:2px;
+    color:var(--ink-soft);
+    font-weight:400;
+    margin-top:4px;
+    text-transform:uppercase;
+  }
+  .cf-caseno{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-soft);
+    text-align:right;
+  }
+  .cf-tabs{
+    display:flex;
+    gap:2px;
+    padding:0 32px;
+    margin-top:-1px;
+  }
+  .cf-tab{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    padding:10px 18px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-bottom:none;
+    cursor:pointer;
+    color:var(--ink-soft);
+    border-radius:6px 6px 0 0;
+    position:relative;
+    top:1px;
+  }
+  .cf-tab.active{
+    background:var(--paper-white);
+    color:var(--ink);
+    border-color:var(--ink);
+    border-bottom:1px solid var(--paper-white);
+    font-weight:600;
+  }
+  .cf-body{
+    background:var(--paper-white);
+    border-top:1px solid var(--ink);
+    padding:28px 32px 40px;
+  }
+  .cf-panel{display:none;}
+  .cf-panel.active{display:block;}
+  h3.cf-h{
+    font-family:var(--slab);
+    font-size:16px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:8px;
+    margin:0 0 16px;
+  }
+  .cf-note{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--ink-soft);
+    background:#EFEDE4;
+    border-left:3px solid var(--folder-tan);
+    padding:10px 14px;
+    margin-bottom:20px;
+    line-height:1.5;
+  }
+  .cf-contacts{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:16px;
+    margin-bottom:24px;
+  }
+  .cf-card{
+    border:1px solid var(--line);
+    padding:16px 18px;
+    background:var(--paper-white);
+    position:relative;
+  }
+  .cf-card:before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;
+    height:4px;
+    background:var(--folder-tan);
+  }
+  .cf-card h4{
+    margin:6px 0 10px;
+    font-family:var(--slab);
+    font-size:15px;
+  }
+  .cf-card p{
+    margin:0 0 4px;
+    font-size:13px;
+    line-height:1.5;
+    font-family:var(--mono);
+    color:var(--ink-soft);
+  }
+  .cf-card p b{color:var(--ink);font-weight:600;}
+  .cf-form-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .cf-field{flex:1;min-width:180px;display:flex;flex-direction:column;gap:5px;}
+  .cf-field label{
+    font-family:var(--mono);
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--ink-soft);
+  }
+  .cf-field input, .cf-field select, .cf-field textarea{
+    font-family:var(--serif);
+    font-size:14px;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    background:var(--paper-white);
+    color:var(--ink);
+    border-radius:2px;
+  }
+  .cf-field textarea{font-family:var(--serif);resize:vertical;}
+  .cf-btn{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--paper-white);
+    border:none;
+    padding:10px 18px;
+    cursor:pointer;
+    border-radius:2px;
+  }
+  .cf-btn:hover{background:var(--stamp-red);}
+  .cf-btn.secondary{
+    background:transparent;
+    color:var(--ink);
+    border:1px solid var(--ink);
+  }
+  .cf-btn.secondary:hover{border-color:var(--stamp-red);color:var(--stamp-red);background:transparent;}
+  .cf-letter-preview{
+    margin-top:22px;
+    background:var(--paper-white);
+    border:1px solid var(--ink);
+    padding:40px 44px;
+    font-family:'Courier New', monospace;
+    font-size:13px;
+    line-height:1.7;
+    white-space:pre-wrap;
+    max-width:680px;
+  }
+  .cf-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  table.cf-tracker{
+    width:100%;
+    border-collapse:collapse;
+    font-family:var(--mono);
+    font-size:12.5px;
+  }
+  table.cf-tracker th{
+    text-align:left;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    border-bottom:2px solid var(--ink);
+    padding:8px 10px;
+  }
+  table.cf-tracker td{
+    padding:10px 10px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  .cf-stamp{
+    display:inline-block;
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:10px;
+    letter-spacing:1px;
+    padding:4px 8px;
+    border:2px solid;
+    border-radius:3px;
+    transform:rotate(-3deg);
+    text-transform:uppercase;
+  }
+  .cf-stamp.draft{color:var(--ink-soft);border-color:var(--ink-soft);}
+  .cf-stamp.sent{color:#3B5B8C;border-color:#3B5B8C;}
+  .cf-stamp.overdue{color:var(--stamp-red);border-color:var(--stamp-red);}
+  .cf-stamp.resolved{color:var(--approved-green);border-color:var(--approved-green);}
+  .cf-empty{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--ink-soft);
+    padding:30px 10px;
+    text-align:center;
+    border:1px dashed var(--line);
+  }
+  .cf-del{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-soft);
+    background:none;
+    border:none;
+    cursor:pointer;
+    text-decoration:underline;
+  }
+  .cf-del:hover{color:var(--stamp-red);}
+  select.cf-status-select{font-family:var(--mono);font-size:11px;padding:4px 6px;}
+  @media print{
+    .cf-header,.cf-tabs,.cf-note,.cf-actions,.no-print{display:none !important;}
+    .cf-body{border:none;padding:0;}
+    .cf-letter-preview{border:none;padding:0;max-width:100%;}
+  }
+</style>
+
+<div class="cf-root">
+  <div class="cf-header">
+    <div class="cf-title">Credit Dispute Case File<small>Draft &middot; Send &middot; Track Follow-Up</small></div>
+    <div class="cf-caseno" id="cfCaseNo">CASE #—</div>
+  </div>
+
+  <div class="cf-tabs no-print">
+    <div class="cf-tab active" data-tab="contacts">01 · Bureau Contacts</div>
+    <div class="cf-tab" data-tab="letter">02 · Draft Letter</div>
+    <div class="cf-tab" data-tab="tracker">03 · Follow-Up Tracker</div>
+  </div>
+
+  <div class="cf-body">
+
+    <!-- CONTACTS -->
+    <div class="cf-panel active" id="panel-contacts">
+      <h3 class="cf-h">Where to send disputes</h3>
+      <div class="cf-note">These are the three national credit bureaus' current dispute-mail addresses and phone lines. Certified mail with return receipt is worth the extra few dollars — it's your proof of the date they received it, which is what starts their legal response clock.</div>
+      <div class="cf-contacts" id="cfContactCards"></div>
+      <div class="cf-note" style="border-left-color:var(--stamp-red);">Under the Fair Credit Reporting Act, a bureau generally must investigate a dispute within 30 days of receiving it (occasionally 45). If a specific creditor or collector reported the error, you can also dispute directly with them — add them as a custom contact in the Draft Letter tab.</div>
+    </div>
+
+    <!-- LETTER -->
+    <div class="cf-panel" id="panel-letter">
+      <h3 class="cf-h">Draft a letter</h3>
+      <div class="cf-form-row">
+        <div class="cf-field">
+          <label>Letter type</label>
+          <select id="ltType">
+            <option value="initial">Initial Dispute (to bureau)</option>
+            <option value="followup">30-Day Follow-Up (no response)</option>
+            <option value="mov">Method of Verification Request</option>
+            <option value="validation">Debt Validation (to collector)</option>
+            <option value="goodwill">Goodwill Adjustment (to original creditor)</option>
+          </select>
+        </div>
+        <div class="cf-field">
+          <label>Send to</label>
+          <select id="ltRecipient">
+            <option value="Equifax">Equifax</option>
+            <option value="Experian">Experian</option>
+            <option value="TransUnion">TransUnion</option>
+            <option value="custom">Custom / other company…</option>
+          </select>
+        </div>
+      </div>
+      <div class="cf-form-row" id="ltCustomRow" style="display:none;">
+        <div class="cf-field"><label>Company name</label><input id="ltCustomName" placeholder="e.g. Portfolio Recovery Associates"></div>
+        <div class="cf-field"><label>Mailing address</label><input id="ltCustomAddr" placeholder="Street, City, State ZIP"></div>
+      </div>
+
+      <div class="cf-form-row">
+        <div class="cf-field"><label>Your full name</label><input id="ltYourName" placeholder="Jane Q. Public"></div>
+        <div class="cf-field"><label>Your mailing address</label><input id="ltYourAddr" placeholder="Street, City, State ZIP"></div>
+      </div>
+      <div class="cf-form-row">
+        <div class="cf-field"><label>Account / item in dispute</label><input id="ltAccount" placeholder="e.g. Capital One acct ending 4432"></div>
+        <div class="cf-field"><label>Original letter sent date (for follow-ups)</label><input id="ltOrigDate" type="date"></div>
+      </div>
+      <div class="cf-form-row">
+        <div class="cf-field" style="min-width:100%;">
+          <label>What's wrong &amp; why (be specific — this becomes the body of your letter)</label>
+          <textarea id="ltReason" rows="4" placeholder="e.g. This account is not mine / was paid in full on [date] / the balance is incorrect / this is a duplicate of another account already on my report."></textarea>
+        </div>
+      </div>
+
+      <div class="cf-actions">
+        <button class="cf-btn" id="ltGenerate">Generate Letter</button>
+      </div>
+
+      <div class="cf-letter-preview" id="ltPreview" style="display:none;"></div>
+      <div class="cf-actions" id="ltPostActions" style="display:none;">
+        <button class="cf-btn" id="ltPrint">Print / Save as PDF</button>
+        <button class="cf-btn secondary" id="ltLogSent">Log as Sent → Add to Tracker</button>
+      </div>
+    </div>
+
+    <!-- TRACKER -->
+    <div class="cf-panel" id="panel-tracker">
+      <h3 class="cf-h">Case tracker</h3>
+      <div class="cf-note">Entries move to <b>OVERDUE</b> automatically once the follow-up date passes without you marking a result. Bureaus generally owe a response within 30 days — that's the default follow-up window used here.</div>
+      <div id="cfTrackerWrap"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const CONTACTS = {
+    Equifax: {
+      addr: "Equifax Information Services LLC\nP.O. Box 740256\nAtlanta, GA 30374",
+      phone: "1-866-349-5191"
+    },
+    Experian: {
+      addr: "Experian\nP.O. Box 4500\nAllen, TX 75013",
+      phone: "1-888-397-3742"
+    },
+    TransUnion: {
+      addr: "TransUnion Consumer Solutions\nP.O. Box 2000\nChester, PA 19016",
+      phone: "1-800-916-8800"
+    }
+  };
+
+  const cardsEl = document.getElementById('cfContactCards');
+  Object.entries(CONTACTS).forEach(([name,c])=>{
+    const div = document.createElement('div');
+    div.className='cf-card';
+    div.innerHTML = `<h4>${name}</h4>
+      <p><b>Mail:</b><br>${c.addr.replace(/\n/g,'<br>')}</p>
+      <p><b>Phone:</b> ${c.phone}</p>`;
+    cardsEl.appendChild(div);
+  });
+
+  document.getElementById('cfCaseNo').textContent = 'CASE #' + Date.now().toString().slice(-6);
+
+  // Tabs
+  document.querySelectorAll('.cf-tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.cf-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.cf-panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+      if(tab.dataset.tab==='tracker') renderTracker();
+    });
+  });
+
+  const recipSel = document.getElementById('ltRecipient');
+  const customRow = document.getElementById('ltCustomRow');
+  recipSel.addEventListener('change', ()=>{
+    customRow.style.display = recipSel.value==='custom' ? 'flex' : 'none';
+  });
+
+  function todayStr(){ return new Date().toISOString().slice(0,10); }
+  function addDays(dateStr, n){
+    const d = dateStr ? new Date(dateStr) : new Date();
+    d.setDate(d.getDate()+n);
+    return d.toISOString().slice(0,10);
+  }
+  function fmtDate(dateStr){
+    if(!dateStr) return '[date]';
+    const d = new Date(dateStr+'T00:00:00');
+    return d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  }
+
+  let currentLetterMeta = null;
+
+  document.getElementById('ltGenerate').addEventListener('click', ()=>{
+    const type = document.getElementById('ltType').value;
+    let recipName = recipSel.value;
+    let recipAddr;
+    if(recipName==='custom'){
+      recipName = document.getElementById('ltCustomName').value || '[Company Name]';
+      recipAddr = document.getElementById('ltCustomAddr').value || '[Company Address]';
+    } else {
+      recipAddr = CONTACTS[recipName].addr;
+    }
+    const yourName = document.getElementById('ltYourName').value || '[Your Name]';
+    const yourAddr = document.getElementById('ltYourAddr').value || '[Your Address]';
+    const account = document.getElementById('ltAccount').value || '[Account/Item]';
+    const reason = document.getElementById('ltReason').value || '[Explain what is inaccurate and why]';
+    const origDate = document.getElementById('ltOrigDate').value;
+    const today = todayStr();
+
+    let body='';
+    if(type==='initial'){
+      body = `${yourName}\n${yourAddr}\n\n${fmtDate(today)}\n\n${recipName}\n${recipAddr}\n\nRe: Request for Investigation of Inaccurate Information\n\nTo Whom It May Concern:\n\nI am writing to dispute the following item currently appearing on my credit report:\n\n${account}\n\nThis information is inaccurate for the following reason:\n${reason}\n\nUnder Section 611 of the Fair Credit Reporting Act, I am requesting that you investigate this matter and correct or remove the disputed item. Please send me written confirmation of the results of your investigation, along with an updated copy of my credit report if any changes are made.\n\nEnclosed are copies of supporting documentation (if applicable). Please do not hesitate to contact me at the address above if you require additional information.\n\nSincerely,\n\n${yourName}`;
+    } else if(type==='followup'){
+      body = `${yourName}\n${yourAddr}\n\n${fmtDate(today)}\n\n${recipName}\n${recipAddr}\n\nRe: Follow-Up on Dispute Sent ${fmtDate(origDate)} — No Response Received\n\nTo Whom It May Concern:\n\nOn ${fmtDate(origDate)}, I submitted a written dispute regarding the following item on my credit report:\n\n${account}\n\nAs of the date of this letter, more than 30 days have passed and I have not received a response. Under the Fair Credit Reporting Act, you are required to complete your investigation within 30 days (or 45 days in certain cases) of receiving my dispute.\n\nI am requesting an immediate update on the status of this investigation, and that the disputed item be removed or corrected if it cannot be verified as accurate within the required timeframe.\n\nPlease respond in writing to the address above.\n\nSincerely,\n\n${yourName}`;
+    } else if(type==='mov'){
+      body = `${yourName}\n${yourAddr}\n\n${fmtDate(today)}\n\n${recipName}\n${recipAddr}\n\nRe: Request for Method of Verification\n\nTo Whom It May Concern:\n\nYou recently informed me that the following item was "verified" following my dispute submitted on ${fmtDate(origDate)}:\n\n${account}\n\nUnder Section 611(a)(7) of the Fair Credit Reporting Act, I am requesting the method of verification you used, including:\n\n- The name, address, and phone number of the furnisher who verified this item\n- A description of the specific documents reviewed to confirm accuracy\n- The name and title of the person who conducted the verification\n\nWithout this information, I have no way to confirm that a reasonable investigation actually took place, as required by law.\n\nPlease respond in writing within 15 days.\n\nSincerely,\n\n${yourName}`;
+    } else if(type==='validation'){
+      body = `${yourName}\n${yourAddr}\n\n${fmtDate(today)}\n\n${recipName}\n${recipAddr}\n\nRe: Request for Debt Validation\n\nTo Whom It May Concern:\n\nI am writing in response to your attempt to collect the following debt:\n\n${account}\n\nThis letter is a request for validation under Section 809 of the Fair Debt Collection Practices Act. I am requesting that you provide:\n\n- The name and address of the original creditor\n- The amount of the alleged debt and how it was calculated\n- Proof that you are licensed to collect debts in my state, if applicable\n- Proof establishing your right to collect this specific debt\n\nUntil you provide this validation, please cease all collection activity and refrain from reporting this debt to any credit bureau.\n\nReason for dispute: ${reason}\n\nSincerely,\n\n${yourName}`;
+    } else if(type==='goodwill'){
+      body = `${yourName}\n${yourAddr}\n\n${fmtDate(today)}\n\n${recipName}\n${recipAddr}\n\nRe: Goodwill Request Regarding Account ${account}\n\nTo Whom It May Concern:\n\nI am a former/current customer with the account referenced above. I am writing to respectfully request a goodwill adjustment to the reporting history on this account.\n\n${reason}\n\nI value my relationship with your company and am asking whether you would consider removing this negative mark as a one-time courtesy, given my overall payment history. I understand this is entirely at your discretion.\n\nThank you for considering my request.\n\nSincerely,\n\n${yourName}`;
+    }
+
+    currentLetterMeta = {recipient: recipName, account, sentDate: today};
+    const preview = document.getElementById('ltPreview');
+    preview.textContent = body;
+    preview.style.display = 'block';
+    document.getElementById('ltPostActions').style.display = 'flex';
+  });
+
+  document.getElementById('ltPrint').addEventListener('click', ()=> window.print());
+
+  document.getElementById('ltLogSent').addEventListener('click', async ()=>{
+    if(!currentLetterMeta) return;
+    const entry = {
+      id: 'entry_'+Date.now(),
+      recipient: currentLetterMeta.recipient,
+      item: currentLetterMeta.account,
+      type: document.getElementById('ltType').value,
+      dateSent: todayStr(),
+      followUpDate: addDays(todayStr(), 30),
+      status: 'sent'
+    };
+    await addEntry(entry);
+    document.querySelector('.cf-tab[data-tab="tracker"]').click();
+  });
+
+  // ---- storage ----
+  async function loadEntries(){
+    try{
+      const res = await window.storage.get('dispute-entries', false);
+      return res ? JSON.parse(res.value) : [];
+    }catch(e){ return []; }
+  }
+  async function saveEntries(list){
+    try{ await window.storage.set('dispute-entries', JSON.stringify(list), false); }
+    catch(e){ console.error('save failed', e); }
+  }
+  async function addEntry(entry){
+    const list = await loadEntries();
+    list.push(entry);
+    await saveEntries(list);
+  }
+
+  async function renderTracker(){
+    const wrap = document.getElementById('cfTrackerWrap');
+    const list = await loadEntries();
+    if(!list.length){
+      wrap.innerHTML = '<div class="cf-empty">No entries yet. Generate a letter and log it as sent, and it will show up here with its 30-day follow-up date.</div>';
+      return;
+    }
+    list.sort((a,b)=> (a.followUpDate||'').localeCompare(b.followUpDate||''));
+    const today = todayStr();
+    let rows = list.map(e=>{
+      let status = e.status;
+      if(status==='sent' && e.followUpDate < today) status='overdue';
+      const stampClass = status==='resolved' ? 'resolved' : status==='overdue' ? 'overdue' : status==='sent' ? 'sent' : 'draft';
+      return `<tr data-id="${e.id}">
+        <td>${e.recipient}</td>
+        <td>${e.item}</td>
+        <td>${e.dateSent}</td>
+        <td>${e.followUpDate}</td>
+        <td><span class="cf-stamp ${stampClass}">${status}</span></td>
+        <td>
+          <select class="cf-status-select" data-id="${e.id}">
+            <option value="sent" ${e.status==='sent'?'selected':''}>sent / awaiting</option>
+            <option value="resolved-removed" ${e.status==='resolved-removed'?'selected':''}>resolved – removed</option>
+            <option value="resolved-verified" ${e.status==='resolved-verified'?'selected':''}>resolved – verified</option>
+          </select>
+        </td>
+        <td><button class="cf-del" data-id="${e.id}">remove</button></td>
+      </tr>`;
+    }).join('');
+
+    wrap.innerHTML = `<table class="cf-tracker">
+      <thead><tr><th>Sent To</th><th>Item</th><th>Date Sent</th><th>Follow-Up Due</th><th>Status</th><th>Update</th><th></th></tr></thead>
+      <tbody>${rows}</tbody></table>`;
+
+    wrap.querySelectorAll('.cf-status-select').forEach(sel=>{
+      sel.addEventListener('change', async ()=>{
+        const list = await loadEntries();
+        const e = list.find(x=>x.id===sel.dataset.id);
+        if(e){
+          e.status = sel.value.startsWith('resolved') ? 'resolved' : sel.value;
+          await saveEntries(list);
+          renderTracker();
+        }
+      });
+    });
+    wrap.querySelectorAll('.cf-del').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        let list = await loadEntries();
+        list = list.filter(x=>x.id!==btn.dataset.id);
+        await saveEntries(list);
+        renderTracker();
+      });
+    });
+  }
+
+  renderTracker();
+})();
+</script>
