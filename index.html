@@ -1461,86 +1461,231 @@ function renderEducation(){
   return wrap;
 }
 
-/* =========================================================
-   SETTINGS: score/metric inputs, bureau config, data export/import
-========================================================= */
-function renderSettings(){
-  const wrap = el(`<div></div>`);
-  wrap.appendChild(el(`<div class="page-head"><div><h1>Settings &amp; Data</h1><p>Enter your current numbers, review bureau contact config, and manage your data.</p></div></div>`));
-
-  const scoreCard = el(`<div class="card" style="margin-bottom:16px;"><h3>Scores &amp; Goal</h3></div>`);
-  const scoreGrid = el(`<div class="grid cols-4"></div>`);
-  [['experian','Experian'],['equifax','Equifax'],['transunion','TransUnion'],['goal','Goal Score']].forEach(([k,label])=>{
-    const m = el(`<div class="metric"><div class="label">${label}</div><input type="number" min="300" max="850" value="${state.scores[k]}"></div>`);
-    m.querySelector('input').oninput = (e)=>{ state.scores[k] = Number(e.target.value)||0; };
-    scoreGrid.appendChild(m);
-  });
-  scoreCard.appendChild(scoreGrid);
-  wrap.appendChild(scoreCard);
-
-  const metricCard = el(`<div class="card" style="margin-bottom:16px;"><h3>Report Metrics</h3></div>`);
-  const metricGrid = el(`<div class="grid cols-4"></div>`);
-  [['collections','Collections'],['latePayments','Late Payments'],['chargeOffs','Charge Offs'],['utilization','Utilization %'],
-   ['totalDebt','Total Debt'],['oldestAccountYears','Oldest Acct (yrs)'],['dti','DTI %'],['recentInquiries','Recent Inquiries'],['businessScore','Business Score']]
-   .forEach(([k,label])=>{
-    const m = el(`<div class="metric"><div class="label">${label}</div><input type="number" value="${state.metrics[k]}"></div>`);
-    m.querySelector('input').oninput = (e)=>{ state.metrics[k] = Number(e.target.value)||0; };
-    metricGrid.appendChild(m);
-  });
-  metricCard.appendChild(metricGrid);
-  wrap.appendChild(metricCard);
-
-  const cfgCard = el(`<div class="card" style="margin-bottom:16px;"><h3>Bureau Configuration</h3><p class="hint" style="margin-bottom:10px;">Loaded from the CONFIG object at the top of the file — edit there if a bureau updates its address.</p></div>`);
-  Object.entries(CONFIG.bureaus).forEach(([k,v])=>{
-    cfgCard.appendChild(el(`<div class="list-row" style="cursor:default;"><div><div class="title">${v.name}</div><div class="meta" style="white-space:pre-line;">${v.address} · ${v.phone}</div></div></div>`));
-  });
-  wrap.appendChild(cfgCard);
-
-  const acctCard = el(`
-    <div class="card" style="margin-bottom:16px;">
-      <h3>Account &amp; Profile</h3>
-      <p class="hint" style="margin-bottom:10px;">Signed in as ${esc(session.user.email||'')}. This client profile (${esc(session.profileName)}) auto-saves to your account as you work.</p>
-      <div class="btn-row">
-        <button class="btn" id="switchProfileBtn2">Switch Client Profile</button>
-        <button class="btn danger" id="signOutBtn3">Sign out</button>
-      </div>
-    </div>
-  `);
-  acctCard.querySelector('#switchProfileBtn2').onclick = () => closeProfile();
-  acctCard.querySelector('#signOutBtn3').onclick = () => signOutUser();
-  wrap.appendChild(acctCard);
-
-  const dataCard = el(`
-    <div class="card">
-      <h3>Backup This Profile</h3>
-      <p class="hint" style="margin-bottom:12px;">Data auto-saves to Firestore under your account. Use these as an offline backup or to move a profile between accounts. Importing replaces everything in the profile you currently have open.</p>
-      <div class="btn-row">
-        <button class="btn primary" id="exportData">Export Data (.json)</button>
-        <button class="btn" id="importData">Import Data</button>
-        <button class="btn danger" id="resetData">Reset This Profile</button>
-      </div>
-      <input type="file" id="importFile" accept=".json" style="display:none">
-    </div>
-  `);
-  dataCard.querySelector('#exportData').onclick = ()=>{
-    const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'casefile-'+session.profileName.replace(/\s+/g,'_')+'.json'; a.click();
-  };
-  dataCard.querySelector('#importData').onclick = ()=> dataCard.querySelector('#importFile').click();
-  dataCard.querySelector('#importFile').onchange = (e)=>{
-    const file = e.target.files[0]; if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ()=>{ try{ state = JSON.parse(reader.result); scheduleSave(); render(); }catch(err){ alert('Could not read that file.'); } };
-    reader.readAsText(file);
-  };
-  dataCard.querySelector('#resetData').onclick = ()=>{
-    if(confirm('This clears everything in this client profile (not your other profiles). Export first if you want to keep it. Continue?')){
-      state = defaultState();
-      scheduleSave();
-      render();
-    }
-  };
   wrap.appendChild(dataCard);
+
+  /* =========================================================
+     CREDIT STRATEGY
+  ========================================================= */
+
+  const creditStrategyCard = el(`
+    <div class="card" style="margin-bottom:16px;">
+      <h3>Credit Strategy</h3>
+
+      <p class="hint" style="margin-bottom:16px;">
+        General credit-building plan based on the current client profile.
+        Review the client's reports and issuer requirements before applying.
+      </p>
+
+      <!-- CLIENT SNAPSHOT -->
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+        gap:12px;
+        margin-bottom:20px;
+      ">
+
+        <div class="metric">
+          <div class="label">Personal Score</div>
+          <div style="font-size:28px;font-weight:700;">525</div>
+        </div>
+
+        <div class="metric">
+          <div class="label">Collections</div>
+          <div style="font-size:28px;font-weight:700;">3</div>
+        </div>
+
+        <div class="metric">
+          <div class="label">Collection Balance</div>
+          <div style="font-size:28px;font-weight:700;">$520</div>
+        </div>
+
+        <div class="metric">
+          <div class="label">Business Age</div>
+          <div style="font-size:28px;font-weight:700;">3 yrs</div>
+        </div>
+
+        <div class="metric">
+          <div class="label">Annual Revenue</div>
+          <div style="font-size:28px;font-weight:700;">$40K</div>
+        </div>
+
+      </div>
+
+      <!-- PERSONAL CREDIT -->
+      <div style="margin-bottom:22px;">
+        <h3>1. Personal Credit — Establish First</h3>
+
+        <p class="hint">
+          Start with one secured revolving account rather than submitting
+          multiple applications at the same time.
+        </p>
+
+        <div class="list-row" style="cursor:default;">
+          <div>
+            <div class="title">Capital One Platinum Secured</div>
+            <div class="meta">
+              Secured personal credit card option
+            </div>
+          </div>
+
+          <a
+            class="btn primary"
+            href="https://www.capitalone.com/credit-cards/platinum-secured/"
+            target="_blank"
+            rel="noopener"
+          >
+            Check / Apply
+          </a>
+        </div>
+
+        <div class="list-row" style="cursor:default;">
+          <div>
+            <div class="title">Discover it Secured</div>
+            <div class="meta">
+              Secured personal credit card option
+            </div>
+          </div>
+
+          <a
+            class="btn"
+            href="https://www.discover.com/credit-cards/secured-credit-card/"
+            target="_blank"
+            rel="noopener"
+          >
+            Check / Apply
+          </a>
+        </div>
+
+        <div class="hint" style="
+          margin-top:10px;
+          padding:12px;
+          border-left:3px solid currentColor;
+        ">
+          Strategy: evaluate both options, but do not submit multiple
+          applications simply to create accounts. Choose the account that
+          fits the client's current situation.
+        </div>
+      </div>
+
+      <!-- BUSINESS CREDIT -->
+      <div style="margin-bottom:22px;">
+        <h3>2. Business Credit — Build Separately</h3>
+
+        <p class="hint">
+          The business is approximately 3 years old, has an EIN and reports
+          approximately $40,000 in annual revenue. Establish dedicated
+          business banking before attempting to build business revolving credit.
+        </p>
+
+        <div class="list-row" style="cursor:default;">
+          <div>
+            <div class="title">
+              Bank of America Business Advantage Unlimited Cash Rewards
+              Secured
+            </div>
+            <div class="meta">
+              Secured business credit card option
+            </div>
+          </div>
+
+          <a
+            class="btn primary"
+            href="https://business.bankofamerica.com/en/credit-cards/business-advantage-unlimited-cash-rewards-secured-business"
+            target="_blank"
+            rel="noopener"
+          >
+            Check / Apply
+          </a>
+        </div>
+      </div>
+
+      <!-- CREDIT CLEANUP -->
+      <div style="margin-bottom:22px;">
+        <h3>3. Credit Cleanup</h3>
+
+        <div class="list-row" style="cursor:default;">
+          <div>
+            <div class="title">3 Collections — Approximately $520</div>
+            <div class="meta">
+              2 outstanding · 1 closed
+            </div>
+          </div>
+        </div>
+
+        <p class="hint">
+          Pull all three consumer credit reports. Verify the creditor,
+          balance, dates, ownership and reporting accuracy before deciding
+          whether a collection should be disputed, resolved or otherwise
+          addressed.
+        </p>
+      </div>
+
+      <!-- 90 DAY PLAN -->
+      <div>
+        <h3>4. 90-Day Credit-Building Plan</h3>
+
+        <div class="list-row" style="cursor:default;">
+          <div>
+            <div class="title">Days 1–30 — Foundation</div>
+            <div class="meta">
+              Pull all three reports · Review collections · Verify personal
+              information · Address inaccuracies · Establish business checking
+              · Separate business and personal finances
+            </div>
+          </div>
+        </div>
+
+        <div class="list-row" style="cursor:default;">
+          <div>
+            <div class="title">Days 30–60 — Establish Tradelines</div>
+            <div class="meta">
+              Choose one secured personal card · Make small legitimate purchases
+              · Keep balances controlled · Pay on time · Evaluate one secured
+              business card after business banking is established
+            </div>
+          </div>
+        </div>
+
+        <div class="list-row" style="cursor:default;">
+          <div>
+            <div class="title">Days 60–90 — Maintain</div>
+            <div class="meta">
+              Maintain 100% on-time payments · Keep utilization low · Monitor
+              reporting · Avoid unnecessary applications · Review progress
+              before adding additional accounts
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OBJECTIVE -->
+      <div style="
+        margin-top:20px;
+        padding:16px;
+        border:1px solid rgba(255,255,255,.12);
+        border-radius:10px;
+      ">
+        <strong>Primary Objective</strong>
+
+        <p class="hint" style="margin-top:6px;">
+          Build a clean, controlled payment history and establish separate
+          personal and business credit activity. The goal is not to accumulate
+          as many accounts as possible.
+        </p>
+      </div>
+
+      <p class="hint" style="margin-top:16px;font-size:12px;">
+        Card availability, approval requirements, credit limits, deposits,
+        reporting practices and terms can change. Review the issuer's current
+        terms before applying. Approval or a specific credit-score increase
+        is not guaranteed.
+      </p>
+
+    </div>
+  `);
+
+  wrap.appendChild(creditStrategyCard);
+
   return wrap;
 }
 
@@ -1548,3 +1693,4 @@ render();
 </script>
 </body>
 </html>
+
